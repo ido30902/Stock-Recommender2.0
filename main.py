@@ -35,7 +35,7 @@ def choose_recommended_stocks(stocks):
             preset['pe'] = (data.info['currentPrice'] / data.info['trailingEps'])
             preset['symbol'] = stock
 
-            # Checks if parameters are valid - Return on Assets > 0 and Price to Earnings ratio > 0
+            # Checks if parameters are valid - Return on Assets > 0, Price to Earnings ratio > 0 and Market value is above 2B$
             if (data.info['currentPrice'] / data.info['trailingEps']) > 0 and data.info['returnOnAssets'] > 0 and data.info['marketCap'] > 2000000000:
                 print("==========")
                 print(f'Stock loaded: {stock}\nCompany name: {data.info["shortName"]}\nPE: {(data.info["currentPrice"] / data.info["trailingEps"]):.2f}\nROA: {data.info["returnOnAssets"] * 100:.2f}%\nMarket Capital: {data.info["marketCap"]:,}$')
