@@ -42,7 +42,7 @@ def choose_recommended_stocks(stocks):
                 new_list.append(preset)
             else:
                 print_border()
-                print(f"({stock}), {preset['name']} didn't match the criteria")
+                print(f"({stock}), {preset['name']} | Didn't match the criteria")
         except:
             print_border()
             print(f'Error loading {stock}')
@@ -106,7 +106,7 @@ def mail_list(output_list):
     # msg.attach(MIMEText(message, 'plain'))
     # s.sendmail
 
-def print_border(): print("=====================")
+def print_border(): print("=====================================================")
 
 
 if __name__ == '__main__':
