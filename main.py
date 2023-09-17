@@ -4,12 +4,14 @@ import requests
 import yfinance as yf
 from string import ascii_uppercase as alphabet
 import json
+from colorama import Fore, Style
 # import smtplib
 # from email.mime.multipart import MIMEMultipart
 # from email.mime.text import MIMEText
 
 
 def main():
+    
     stocks_list = get_nyse_symbols_from_db()
 
     choose_recommended_stocks(stocks_list)
@@ -38,15 +40,18 @@ def choose_recommended_stocks(stocks):
             # Checks if parameters are valid - Return on Assets > 0, Price to Earnings ratio > 0 and Market value is above 2B$
             if (data.info['currentPrice'] / data.info['trailingEps']) > 0 and data.info['returnOnAssets'] > 0 and data.info['marketCap'] > 2000000000:
                 print_border()
-                print(f'Stock loaded: {stock}\nCompany name: {data.info["shortName"]}\nPE: {(data.info["currentPrice"] / data.info["trailingEps"]):.2f}\nROA: {data.info["returnOnAssets"] * 100:.2f}%\nMarket Capital: {data.info["marketCap"]:,}$')
+                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {data.info["shortName"]}\nPE: {(data.info["currentPrice"] / data.info["trailingEps"]):.2f}\nROA: {data.info["returnOnAssets"] * 100:.2f}%\nMarket Capital: {data.info["marketCap"]:,}$')
                 new_list.append(preset)
             else:
                 print_border()
-                print(f"({stock}), {preset['name']} | Didn't match the criteria")
+                print(Fore.YELLOW + f"({stock}), {preset['name']} | Didn't match the criteria")
         except:
             print_border()
-            print(f'Error loading {stock}')
+            print(Fore.RED + f'Error loading {stock}')
 
+    # Updates the short list (Mainly for short term checks)
+    update_short_stock_list(new_list)
+    
     # Sorts the list 
     new_list.sort(key=lambda x: (-x['roa'], x['pe']))
     
@@ -56,8 +61,6 @@ def choose_recommended_stocks(stocks):
         print(stock['symbol'],end=', ')
     
     
-
-
 # Updates the stocks list to the stock_list.json file
 def update_stocks_list(stocks):
     with open('stocks_list.json', 'w') as json_file:
@@ -67,7 +70,14 @@ def update_stocks_list(stocks):
 def get_nyse_symbols_from_db():
     with open('stocks_list.json') as json_file:
         return json.load(json_file)
-        
+
+def update_short_stock_list(stocks):
+    with open('short_list.json','w') as json_file:
+        json_file.write(json.dumps(stocks))      
+
+def get_short_list():
+    with open('short_list.json') as json_file:
+        return json.load(json_file)
 
 def get_nyse_symbols_from_web():
 
@@ -106,7 +116,7 @@ def mail_list(output_list):
     # msg.attach(MIMEText(message, 'plain'))
     # s.sendmail
 
-def print_border(): print("=====================================================")
+def print_border(): print(Fore.WHITE + "=====================================================")
 
 
 if __name__ == '__main__':
