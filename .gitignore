@@ -1,1 +1,6 @@
-/test.py
+# Files
+test.py
+
+# General
+.gitignore
+.env

@@ -1,9 +1,12 @@
 from pymongo import MongoClient
+import os
+
+
 
 class DatabaseManager:
     def __init__(self):
         
-        self.mongo = MongoClient('mongodb://localhost:27017')
+        self.mongo = MongoClient(os.getenv("DB_URL"))
     
         try:
            
