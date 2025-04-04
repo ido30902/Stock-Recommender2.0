@@ -1,120 +1,182 @@
-import pandas as pd
-import bs4 as bs
-import requests
-import yfinance as yf
-from string import ascii_uppercase as alphabet
-import json
 from colorama import Fore, Style
-# import smtplib
-# from email.mime.multipart import MIMEMultipart
-# from email.mime.text import MIMEText
+from DatabaseManager import DatabaseManager
+from APIManager import APIManager, Stock
+import time
 
+db_controller = DatabaseManager()
+api_manager = APIManager()
 
 def main():
     
-    stocks_list = get_nyse_symbols_from_db()
+    stocks_list = api_manager.get_nyse_symbols()
 
-    choose_recommended_stocks(stocks_list)
-
-
-def choose_recommended_stocks(stocks):
+    #stocks_list = get_updated_stock_info(stocks_list)
+    stocks_list = get_magic_formula_stocks(stocks_list)
     
-    preset = {'symbol': '', 'pe': 0.0, 'roa': 0.0, 'marketCap': 0, 'name': ''}
+    db_controller.insert_many_stocks(stocks_list)
+    
+    #stocks_list = rank_stocks(stocks_list)
+ 
+    print(Style.RESET_ALL + '\n')
+    
+    #print(stocks_list)
+    
+def rank_stocks(stocks_list):
+     
+    # Sorts the list 
+    stocks_list.sort(key=lambda x: (-x['roa'], x['pe']))
+
+    # Strips the list so the it keeps only the 10 first items
+    stocks_list = stocks_list[:50]
+    for stock in stocks_list:
+        print(stock['symbol'],end=', ')
+        
+    return stocks_list
+
+# def get_updated_stock_info(stocks):
+    
+#     preset = {'symbol': '', 'pe': 0.0, 'roc': 0.0, 'marketCap': 0, 'name': '', 'logo_url': "", 'description': ""}
+#     new_list = []
+
+#     print('Collecting stock updates...\nStocks loaded:')
+
+#     # Information from Yahoo Finance
+#     for stock in stocks:
+#         # List preparation preset
+#         preset = {'symbol': '', 'pe': 0.0, 'roa': 0.0, 'marketCap': 0, 'name': '', 'logo_url': '', 'description' : ""}
+#         try:
+#             # Retrieves the data and stores it in the object
+#             s = api_manager.get_stock_data(stock)
+#             preset['marketCap'] = s.data['marketCap']
+#             preset['name'] = s.data['shortName']
+#             preset['roa'] = s.data['returnOnAssets']
+#             preset['pe'] = (s.data['currentPrice'] / s.data['trailingEps'])
+#             preset['logo_url'] = 'https://logo.clearbit.com/' + s.data['website'].strip('https://')
+#             preset['description'] = s.data['longBusinessSummary']
+#             preset['symbol'] = s.data['symbol']
+
+#             # Checks if parameters are valid - Return on Assets > 0, Price to Earnings ratio > 0 and Market value is above 2B$
+#             if s.check_formula_valid():
+#                 print_border()
+#                 print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nPE: {(s.data["currentPrice"] / s.data["trailingEps"]):.2f}\nROA: {s.data["returnOnAssets"] * 100:.2f}%\nMarket Capital: {s.data["marketCap"]:,}$')
+#                 new_list.append(preset)
+#             else:
+#                 print_border()
+#                 print(Fore.YELLOW + f"({s.data['symbol']}), {preset['name']} | Didn't match the criteria")
+        
+#         except:
+#             print_border()
+#             print(Fore.RED + f'Error loading {stock}')
+            
+            
+           
+#     return new_list
+
+
+def check_formula_valid(stock):
+    if stock['pe'] > 0 and stock['roc'] > 0:
+        return True
+    else:
+        return False
+
+def get_magic_formula_stocks(stocks):
+    preset = {'symbol': '', 'pe': 0.0, 'roc': 0.0, 'marketCap': 0, 'name': '', 'description': "", 'logo_url': '', "magic_formula_score": 0, "graham_score": 0, "current_ratio": 0, "debt_to_equity": 0, "book_value": 0}
     new_list = []
 
     print('Collecting stock updates...\nStocks loaded:')
 
-    # Information from Yahoo Finance
     for stock in stocks:
-        # List preparation preset
-        preset = {'symbol': '', 'pe': 0.0, 'roa': 0.0, 'marketCap': 0, 'name': ''}
         try:
-            # Retrieves the data and stores it in the object
-            data = yf.Ticker(stock)
-            preset['marketCap'] = data.info['marketCap']
-            preset['name'] = data.info['shortName']
-            preset['roa'] = data.info['returnOnAssets']
-            preset['pe'] = (data.info['currentPrice'] / data.info['trailingEps'])
-            preset['symbol'] = stock
+            # Get stock data using yfinance
+            s = api_manager.get_stock_data(stock)
+            
+            # Calculate Return on Capital (ROC)
+            # ROC = EBIT / (Net Working Capital + Net Fixed Assets)
+            #ebitda = s.data['ebitda']
+            #working_capital = s.data['totalCurrentAssets'] - s.data['totalCurrentLiabilities']
+            #fixed_assets = s.data['propertyPlantEquipment']
+            #roc = ebitda / (working_capital + fixed_assets) if (working_capital + fixed_assets) != 0 else 0
+            # different way to calculate ROC
 
-            # Checks if parameters are valid - Return on Assets > 0, Price to Earnings ratio > 0 and Market value is above 2B$
-            if (data.info['currentPrice'] / data.info['trailingEps']) > 0 and data.info['returnOnAssets'] > 0 and data.info['marketCap'] > 2000000000:
+
+            # Calculate Earnings Yield (EY)
+            # EY = EBITDA / Enterprise Value
+            #enterprise_value = s.data['enterpriseValue']
+            #ey = ebitda / enterprise_value if enterprise_value != 0 else 0
+            
+            
+            
+
+            # Calculate Benjamin Graham metrics
+            current_ratio = s.data['currentRatio']
+            debt_to_equity = s.data['debtToEquity']
+            book_value = s.data['bookValue']
+            current_price = s.data['currentPrice']
+            graham_score = 0
+
+            # Calculate Graham score based on his criteria
+            if current_ratio >= 2 and debt_to_equity < 0.5:
+                graham_score += 1
+            if current_price < book_value * 1.5:
+                graham_score += 1
+            if s.data['trailingEps'] > 0:
+                graham_score += 1
+
+            # Store data in preset
+            preset = {
+                'symbol': s.data['symbol'],
+                'pe': (s.data['currentPrice'] / s.data['trailingEps']) if s.data['trailingEps'] != 0 else 0,
+                'marketCap': s.data['marketCap'],
+                'name': s.data['shortName'],
+                'description': s.data['longBusinessSummary'],
+                'logo_url': 'https://logo.clearbit.com/' + s.data['website'].strip('https://'),
+                'graham_props':{
+                    'graham_score': graham_score,
+                    'current_ratio': current_ratio,
+                    'debt_to_equity': debt_to_equity,
+                    'book_value': book_value,
+                    'graham_rank': 0
+                },
+                'magic_formula_props':{
+                    'roa': s.data['returnOnAssets'],
+                    'magic_formula_rank': 0
+                }
+            }
+
+            # Magic Formula combines ROC and EY
+            # Higher values are better
+            if s.check_formula_valid():
                 print_border()
-                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {data.info["shortName"]}\nPE: {(data.info["currentPrice"] / data.info["trailingEps"]):.2f}\nROA: {data.info["returnOnAssets"] * 100:.2f}%\nMarket Capital: {data.info["marketCap"]:,}$')
+                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nPE: {preset["pe"]:.2f}\nROA: {s.data["returnOnAssets"]:.2f}\nMarket Capital: {s.data["marketCap"]:,}$\nGraham Score: {graham_score}/3')
                 new_list.append(preset)
             else:
                 print_border()
-                print(Fore.YELLOW + f"({stock}), {preset['name']} | Didn't match the criteria")
-        except:
+                print(Fore.YELLOW + f"({s.data['symbol']}), {preset['name']} | Didn't match the criteria")
+        
+        except Exception as e:
+            if "Too Many Requests" in str(e):
+                print(Fore.YELLOW + "Rate limit reached. Waiting for 60 seconds...")
+                time.sleep(60)
+                stocks.append(stock)  # Add the failed stock back to the list
+                continue
             print_border()
-            print(Fore.RED + f'Error loading {stock}')
+            print(Fore.RED + f'Error loading {stock}: {str(e)}')
 
-    # Updates the short list (Mainly for short term checks)
-    update_short_stock_list(new_list)
+    # Sort by Magic Formula score (ROC + EY)
+    stocks.sort(key=lambda x: (-x['magic_formula_props']['roa'], x['pe']))
     
-    # Sorts the list 
-    new_list.sort(key=lambda x: (-x['roa'], x['pe']))
+    # Add Magic Formula ranking
+    for i, stock in enumerate(new_list, 1):
+        stock['magic_formula_rank'] = i
+
+    # Sort by Graham score
+    new_list.sort(key=lambda x: -x['graham_props']['graham_score'])
     
-    # Strips the list so the it keeps only the 10 first items
-    new_list = new_list[:10]
-    for stock in new_list:
-        print(stock['symbol'],end=', ')
+    # Add Graham ranking
+    for i, stock in enumerate(new_list, 1):
+        stock['graham_rank'] = i
     
-    
-# Updates the stocks list to the stock_list.json file
-def update_stocks_list(stocks):
-    with open('stocks_list.json', 'w') as json_file:
-        json_file.write(json.dumps(stocks))
-
-# Loads the stocks list from the stock_list.json file
-def get_nyse_symbols_from_db():
-    with open('stocks_list.json') as json_file:
-        return json.load(json_file)
-
-def update_short_stock_list(stocks):
-    with open('short_list.json','w') as json_file:
-        json_file.write(json.dumps(stocks))      
-
-def get_short_list():
-    with open('short_list.json') as json_file:
-        return json.load(json_file)
-
-def get_nyse_symbols_from_web():
-
-    tickers=[]
-
-    # Gets all the stocks in the table for every pagination at the website.
-    for letter in list(map(chr, range(ord('A'), ord('Z')+1))):
-        print(f'Loading stocks that start with: {letter}')
-        
-        # Stock list found online. The BeautifulSoup library reads the page's HTML
-        resp=requests.get(
-            f'https://stock-screener.org/stock-list.aspx?alpha={letter}')
-        soup=bs.BeautifulSoup(resp.text, 'lxml')
-        
-        # Tracks the table element from the website
-        table=soup.find('table', {'class': 'styled'})
-
-        # Fetches the actual value from the table
-        for row in table.findAll('tr')[1:]:
-            ticker=row.findAll('td')[0].text
-            tickers.append(ticker.strip())
-    return tickers
-
-def mail_list(output_list):
-    pass
-    # s = smtplib.SMTP(host='your_host_address_here', port=your_port_here)
-    # s.starttls()
-    # s.login(MY_ADDRESS, PASSWORD)
-
-    # msg = MIMEMultipart() 
-
-    # # setup the parameters of the message
-    # msg['From']=MY_ADDRESS
-    # msg['To']=email
-    # msg['Subject']="This is TEST"
-    # msg.attach(MIMEText(message, 'plain'))
-    # s.sendmail
+    return new_list
 
 def print_border(): print(Fore.WHITE + "=====================================================")
 
