@@ -72,12 +72,24 @@ def rank_stocks(stocks_list):
            
 #     return new_list
 
+def rank_graham_stocks(stocks):
+    # Sort by Graham score
+    stocks.sort(key=lambda x: -x['graham_props']['graham_score'])
+    
+    # Add Graham ranking
+    for i, stock in enumerate(stocks, 1):
+        stock['graham_rank'] = i
+    
+    return stocks
 
-def check_formula_valid(stock):
-    if stock['pe'] > 0 and stock['roc'] > 0:
-        return True
-    else:
-        return False
+def rank_magic_formula_stocks(stocks):
+    stocks.sort(key=lambda x: (-x['magic_formula_props']['roa'], x['pe']))
+    
+     # Add Magic Formula ranking
+    for i, stock in enumerate(stocks, 1):
+        stock['magic_formula_props']['magic_formula_rank'] = i
+    
+    return stocks
 
 def get_magic_formula_stocks(stocks):
     preset = {'symbol': '', 'pe': 0.0, 'roc': 0.0, 'marketCap': 0, 'name': '', 'description': "", 'logo_url': '', "magic_formula_score": 0, "graham_score": 0, "current_ratio": 0, "debt_to_equity": 0, "book_value": 0}
@@ -130,6 +142,7 @@ def get_magic_formula_stocks(stocks):
                 'name': s.data['shortName'],
                 'description': s.data['longBusinessSummary'],
                 'logo_url': 'https://logo.clearbit.com/' + s.data['website'].strip('https://'),
+                'sector': s.data['sectorDisp'],
                 'graham_props':{
                     'graham_score': graham_score,
                     'current_ratio': current_ratio,
@@ -157,24 +170,14 @@ def get_magic_formula_stocks(stocks):
             if "Too Many Requests" in str(e):
                 print(Fore.YELLOW + "Rate limit reached. Waiting for 60 seconds...")
                 time.sleep(60)
-                stocks.append(stock)  # Add the failed stock back to the list
+                stocks.append(stock)  # AddS the failed stock back to the list
                 continue
             print_border()
             print(Fore.RED + f'Error loading {stock}: {str(e)}')
 
-    # Sort by Magic Formula score (ROC + EY)
-    stocks.sort(key=lambda x: (-x['magic_formula_props']['roa'], x['pe']))
     
-    # Add Magic Formula ranking
-    for i, stock in enumerate(new_list, 1):
-        stock['magic_formula_rank'] = i
-
-    # Sort by Graham score
-    new_list.sort(key=lambda x: -x['graham_props']['graham_score'])
-    
-    # Add Graham ranking
-    for i, stock in enumerate(new_list, 1):
-        stock['graham_rank'] = i
+    #new_list = rank_graham_stocks(new_list)
+    #new_list = rank_magic_formula_stocks(new_list)
     
     return new_list
 
