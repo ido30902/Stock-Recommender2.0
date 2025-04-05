@@ -4,3 +4,6 @@ test.py
 # General
 .gitignore
 .env
+
+# Directories
+__pycache__/
