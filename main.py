@@ -10,71 +10,16 @@ def main():
     
     stocks_list = api_manager.get_nyse_symbols()
 
-    #stocks_list = get_updated_stock_info(stocks_list)
-    stocks_list = get_magic_formula_stocks(stocks_list)
+    stocks_list = get_stocks_data(stocks_list)
     
     db_controller.insert_many_stocks(stocks_list)
-    
-    #stocks_list = rank_stocks(stocks_list)
- 
+     
     print(Style.RESET_ALL + '\n')
     
-    #print(stocks_list)
-    
-def rank_stocks(stocks_list):
-     
-    # Sorts the list 
-    stocks_list.sort(key=lambda x: (-x['roa'], x['pe']))
-
-    # Strips the list so the it keeps only the 10 first items
-    stocks_list = stocks_list[:50]
-    for stock in stocks_list:
-        print(stock['symbol'],end=', ')
-        
-    return stocks_list
-
-# def get_updated_stock_info(stocks):
-    
-#     preset = {'symbol': '', 'pe': 0.0, 'roc': 0.0, 'marketCap': 0, 'name': '', 'logo_url': "", 'description': ""}
-#     new_list = []
-
-#     print('Collecting stock updates...\nStocks loaded:')
-
-#     # Information from Yahoo Finance
-#     for stock in stocks:
-#         # List preparation preset
-#         preset = {'symbol': '', 'pe': 0.0, 'roa': 0.0, 'marketCap': 0, 'name': '', 'logo_url': '', 'description' : ""}
-#         try:
-#             # Retrieves the data and stores it in the object
-#             s = api_manager.get_stock_data(stock)
-#             preset['marketCap'] = s.data['marketCap']
-#             preset['name'] = s.data['shortName']
-#             preset['roa'] = s.data['returnOnAssets']
-#             preset['pe'] = (s.data['currentPrice'] / s.data['trailingEps'])
-#             preset['logo_url'] = 'https://logo.clearbit.com/' + s.data['website'].strip('https://')
-#             preset['description'] = s.data['longBusinessSummary']
-#             preset['symbol'] = s.data['symbol']
-
-#             # Checks if parameters are valid - Return on Assets > 0, Price to Earnings ratio > 0 and Market value is above 2B$
-#             if s.check_formula_valid():
-#                 print_border()
-#                 print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nPE: {(s.data["currentPrice"] / s.data["trailingEps"]):.2f}\nROA: {s.data["returnOnAssets"] * 100:.2f}%\nMarket Capital: {s.data["marketCap"]:,}$')
-#                 new_list.append(preset)
-#             else:
-#                 print_border()
-#                 print(Fore.YELLOW + f"({s.data['symbol']}), {preset['name']} | Didn't match the criteria")
-        
-#         except:
-#             print_border()
-#             print(Fore.RED + f'Error loading {stock}')
-            
-            
-           
-#     return new_list
 
 def rank_graham_stocks(stocks):
     # Sort by Graham score
-    stocks.sort(key=lambda x: -x['graham_props']['graham_score'])
+    stocks.sort(key=['graham_props']['graham_score'], reverse=True)
     
     # Add Graham ranking
     for i, stock in enumerate(stocks, 1):
@@ -91,8 +36,8 @@ def rank_magic_formula_stocks(stocks):
     
     return stocks
 
-def get_magic_formula_stocks(stocks):
-    preset = {'symbol': '', 'pe': 0.0, 'roc': 0.0, 'marketCap': 0, 'name': '', 'description': "", 'logo_url': '', "magic_formula_score": 0, "graham_score": 0, "current_ratio": 0, "debt_to_equity": 0, "book_value": 0}
+def get_stocks_data(stocks):
+    
     new_list = []
 
     print('Collecting stock updates...\nStocks loaded:')
@@ -160,7 +105,7 @@ def get_magic_formula_stocks(stocks):
             # Higher values are better
             if s.check_formula_valid():
                 print_border()
-                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nPE: {preset["pe"]:.2f}\nROA: {s.data["returnOnAssets"]:.2f}\nMarket Capital: {s.data["marketCap"]:,}$\nGraham Score: {graham_score}/3')
+                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nPE: {preset["pe"]:.2f}\nROA: {s.data["returnOnAssets"] * 100 :.2f}%\nMarket Capital: {s.data["marketCap"]:,}$\nGraham Score: {graham_score}/3')
                 new_list.append(preset)
             else:
                 print_border()
@@ -168,14 +113,15 @@ def get_magic_formula_stocks(stocks):
         
         except Exception as e:
             if "Too Many Requests" in str(e):
-                print(Fore.YELLOW + "Rate limit reached. Waiting for 60 seconds...")
+                print(Fore.YELLOW + f"Rate limit reached. Waiting for 60 seconds...\nAdding {stock} back to the list")
+                print_border()
                 time.sleep(60)
-                stocks.append(stock)  # AddS the failed stock back to the list
+                stocks.append(stock)  # Adds the failed stock back to the list
                 continue
-            print_border()
             print(Fore.RED + f'Error loading {stock}: {str(e)}')
+            print_border()
 
-    
+    print_border()
     #new_list = rank_graham_stocks(new_list)
     #new_list = rank_magic_formula_stocks(new_list)
     

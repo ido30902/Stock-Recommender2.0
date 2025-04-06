@@ -31,8 +31,6 @@ class APIManager:
     
         return tickers
 
-
-
 # Stock class
 class Stock:
     def __init__(self, data):

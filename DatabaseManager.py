@@ -15,12 +15,14 @@ class DatabaseManager:
             self.mongo.admin.command({'ping': 1})
             print("Pinged your deployment. You successfully connected to MongoDB!")
             
-            
             if 'book_investment' in self.mongo.list_database_names():
                 self.db = self.mongo["book_investment"]
+                print("Database found")
+            else:
+                print("Database not found")
                 
         except:
-            pass
+            print("Error connecting to MongoDB or Database not found")
         
     def insert_new_stock(self,stock):
         self.db['stocks'].insert_one(stock)
