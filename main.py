@@ -2,55 +2,30 @@ from colorama import Fore, Style
 from DatabaseManager import DatabaseManager
 from APIManager import APIManager
 import time
+from utils import *
 
 db_controller = DatabaseManager()
 api_manager = APIManager()
 
 def main():
+    
+    # Get all the stocks from the NYSE
     stocks_list = api_manager.get_nyse_symbols()
-
+    
+    # Get the data for each stock
     stocks_list = get_stocks_data(stocks_list)
 
+    # Rank the stocks based on Graham's formula
+    stocks_list = rank_graham_stocks(stocks_list)
+
+    # Rank the stocks based on the Magic Formula
+    stocks_list = rank_magic_formula_stocks(stocks_list)
+
+    # Update the stocks in the database
     db_controller.update_many_stocks(stocks_list)
      
     print(Style.RESET_ALL + '\n')
     
-
-def rank_graham_stocks(stocks):
-    # Sort by Graham score
-    stocks.sort(key=lambda x: x['graham_props']['graham_score'], reverse=True)
-    
-    # Add Graham ranking
-    for i, stock in enumerate(stocks, 1):
-        stock['graham_props']['graham_rank'] = i
-    
-    return stocks
-
-def rank_magic_formula_stocks(stocks):
-    
-    # Weights for the magic formula
-    ROA_WEIGHT = 0.3 # 30% of the overall score
-    PE_WEIGHT = 0.7 # 70% of the overall score
-
-    # Calculate combined score where PE is 70% and ROA is 30% of overall score
-    for stock in stocks:
-        pe_score = stock['pe'] if stock['pe'] != 0 else float('inf')
-        roa_score = stock['magic_formula_props']['roa'] if 'roa' in stock['magic_formula_props'] else 0
-        # Lower PE is better, higher ROA is better
-        # Invert PE so higher values are better for sorting
-        if pe_score != float('inf'):
-            stock['magic_formula_props']['combined_score'] = (PE_WEIGHT * (1/pe_score)) + (ROA_WEIGHT * roa_score)
-        else:
-            stock['magic_formula_props']['combined_score'] = ROA_WEIGHT * roa_score
-       
-    # Sort by combined score (higher is better)
-    stocks.sort(key=lambda x: x['magic_formula_props']['combined_score'], reverse=True)
-    # Add Magic Formula ranking
-    for i, stock in enumerate(stocks, 1):
-        stock['magic_formula_props']['magic_formula_rank'] = i
-        del stock['magic_formula_props']['combined_score']
-    
-    return stocks
 
 def get_stocks_data(stocks):
     
@@ -78,8 +53,6 @@ def get_stocks_data(stocks):
             #ey = ebitda / enterprise_value if enterprise_value != 0 else 0
             
             
-            
-
             # Calculate Benjamin Graham metrics
             current_ratio = s.data['currentRatio']
             debt_to_equity = s.data['debtToEquity']
@@ -98,6 +71,7 @@ def get_stocks_data(stocks):
             # Store data in preset
             preset = {
                 'symbol': s.data['symbol'],
+                'price': s.data['currentPrice'],
                 'pe': (s.data['currentPrice'] / s.data['trailingEps']) if s.data['trailingEps'] != 0 else 0,
                 'marketCap': s.data['marketCap'],
                 'name': s.data['shortName'],
@@ -109,7 +83,9 @@ def get_stocks_data(stocks):
                     'current_ratio': current_ratio,
                     'debt_to_equity': debt_to_equity,
                     'book_value': book_value,
-                    'graham_rank': 0
+                    'graham_rank': 0,
+                    'eps': s.data['trailingEps'],
+                    'intrinsic_value': calculate_intrinsic_value(s.data['trailingEps'], 0.07)
                 },
                 'magic_formula_props':{
                     'roa': s.data['returnOnAssets'],
@@ -138,8 +114,7 @@ def get_stocks_data(stocks):
             print(Fore.RED + f'Error loading {stock}: {str(e)}')            
 
     print_border()
-    new_list = rank_graham_stocks(new_list)
-    new_list = rank_magic_formula_stocks(new_list)
+    
     
     return new_list
 

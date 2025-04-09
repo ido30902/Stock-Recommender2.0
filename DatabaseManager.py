@@ -31,9 +31,20 @@ class DatabaseManager:
         self.db['stocks'].insert_many(stocks)
     
     def update_stock(self, stock):
-        self.db['stocks'].update_one({'symbol': stock['symbol']}, {'$set': stock})
+        existing_stock = self.db['stocks'].find_one({'symbol': stock['symbol']})
+        if existing_stock:
+            self.db['stocks'].update_one({'symbol': stock['symbol']}, {'$set': stock})
+        else:
+            self.db['stocks'].insert_one(stock)
     
     def update_many_stocks(self, stocks):
         for stock in stocks:
-            self.db['stocks'].update_one({'symbol': stock['symbol']}, {'$set': stock})
+            # Check if the stock exists before updating
+            existing_stock = self.db['stocks'].find_one({'symbol': stock['symbol']})
+            if existing_stock:
+                # Update existing stock
+                self.db['stocks'].update_one({'symbol': stock['symbol']}, {'$set': stock})
+            else:
+                # Insert new stock if not found
+                self.db['stocks'].insert_one(stock)
 
