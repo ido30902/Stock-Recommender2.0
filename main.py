@@ -12,18 +12,18 @@ def main():
 
     stocks_list = get_stocks_data(stocks_list)
     
-    db_controller.insert_many_stocks(stocks_list)
+    db_controller.update_many_stocks(stocks_list)
      
     print(Style.RESET_ALL + '\n')
     
 
 def rank_graham_stocks(stocks):
     # Sort by Graham score
-    stocks.sort(key=['graham_props']['graham_score'], reverse=True)
+    stocks.sort(key=lambda x: x['graham_props']['graham_score'], reverse=True)
     
     # Add Graham ranking
     for i, stock in enumerate(stocks, 1):
-        stock['graham_rank'] = i
+        stock['graham_props']['graham_rank'] = i
     
     return stocks
 
@@ -113,17 +113,17 @@ def get_stocks_data(stocks):
         
         except Exception as e:
             if "Too Many Requests" in str(e):
-                print(Fore.YELLOW + f"Rate limit reached. Waiting for 60 seconds...\nAdding {stock} back to the list")
                 print_border()
+                print(Fore.YELLOW + f"Rate limit reached. Waiting for 60 seconds...\nAdding {stock} back to the list")  
                 time.sleep(60)
                 stocks.append(stock)  # Adds the failed stock back to the list
                 continue
-            print(Fore.RED + f'Error loading {stock}: {str(e)}')
             print_border()
+            print(Fore.RED + f'Error loading {stock}: {str(e)}')            
 
     print_border()
-    #new_list = rank_graham_stocks(new_list)
-    #new_list = rank_magic_formula_stocks(new_list)
+    new_list = rank_graham_stocks(new_list)
+    new_list = rank_magic_formula_stocks(new_list)
     
     return new_list
 

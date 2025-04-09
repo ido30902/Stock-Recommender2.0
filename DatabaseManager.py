@@ -32,4 +32,7 @@ class DatabaseManager:
     
     def update_stock(self, stock):
         self.db['stocks'].update_one({'symbol': stock['symbol']}, {'$set': stock})
+    
+    def update_many_stocks(self, stocks):
+        self.db['stocks'].update_many({'symbol': {'$in': [stock['symbol'] for stock in stocks]}}, {'$set': {'stock': stock['stock'] for stock in stocks}})
 
