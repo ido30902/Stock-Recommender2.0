@@ -1,17 +1,16 @@
 from colorama import Fore, Style
 from DatabaseManager import DatabaseManager
-from APIManager import APIManager, Stock
+from APIManager import APIManager
 import time
 
 db_controller = DatabaseManager()
 api_manager = APIManager()
 
 def main():
-    
     stocks_list = api_manager.get_nyse_symbols()
 
     stocks_list = get_stocks_data(stocks_list)
-    
+
     db_controller.update_many_stocks(stocks_list)
      
     print(Style.RESET_ALL + '\n')
@@ -28,11 +27,28 @@ def rank_graham_stocks(stocks):
     return stocks
 
 def rank_magic_formula_stocks(stocks):
-    stocks.sort(key=lambda x: (-x['magic_formula_props']['roa'], x['pe']))
     
-     # Add Magic Formula ranking
+    # Weights for the magic formula
+    ROA_WEIGHT = 0.2 # 20% of the overall score
+    PE_WEIGHT = 0.8 # 80% of the overall score
+
+    # Calculate combined score where PE is 80% and ROA is 20% of overall score
+    for stock in stocks:
+        pe_score = stock['pe'] if stock['pe'] != 0 else float('inf')
+        roa_score = stock['magic_formula_props']['roa'] if 'roa' in stock['magic_formula_props'] else 0
+        # Lower PE is better, higher ROA is better
+        # Invert PE so higher values are better for sorting
+        if pe_score != float('inf'):
+            stock['magic_formula_props']['combined_score'] = (PE_WEIGHT * (1/pe_score)) + (ROA_WEIGHT * roa_score)
+        else:
+            stock['magic_formula_props']['combined_score'] = ROA_WEIGHT * roa_score
+       
+    # Sort by combined score (higher is better)
+    stocks.sort(key=lambda x: x['magic_formula_props']['combined_score'], reverse=True)
+    # Add Magic Formula ranking
     for i, stock in enumerate(stocks, 1):
         stock['magic_formula_props']['magic_formula_rank'] = i
+        del stock['magic_formula_props']['combined_score']
     
     return stocks
 
