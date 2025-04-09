@@ -29,10 +29,10 @@ def rank_graham_stocks(stocks):
 def rank_magic_formula_stocks(stocks):
     
     # Weights for the magic formula
-    ROA_WEIGHT = 0.2 # 20% of the overall score
-    PE_WEIGHT = 0.8 # 80% of the overall score
+    ROA_WEIGHT = 0.3 # 30% of the overall score
+    PE_WEIGHT = 0.7 # 70% of the overall score
 
-    # Calculate combined score where PE is 80% and ROA is 20% of overall score
+    # Calculate combined score where PE is 70% and ROA is 30% of overall score
     for stock in stocks:
         pe_score = stock['pe'] if stock['pe'] != 0 else float('inf')
         roa_score = stock['magic_formula_props']['roa'] if 'roa' in stock['magic_formula_props'] else 0

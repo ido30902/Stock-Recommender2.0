@@ -30,6 +30,7 @@ class APIManager:
                 tickers.append(ticker.strip())
     
         return tickers
+    
 
 # Stock class
 class Stock:
