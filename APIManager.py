@@ -1,6 +1,7 @@
 import yfinance as yf
 import bs4 as bs
 import requests
+from colorama import Fore
 
 class APIManager:
     def __init__(self):
@@ -14,7 +15,7 @@ class APIManager:
 
         # Gets all the stocks in the table for every pagination at the website.
         for letter in list(map(chr, range(ord('A'), ord('Z')+1))):
-            print(f'Loading stocks that start with: {letter}')
+            print(Fore.WHITE + f'Loading stocks that start with: {letter}')
             
             # Stock list found online. The BeautifulSoup library reads the page's HTML
             resp=requests.get(
@@ -30,8 +31,19 @@ class APIManager:
                 tickers.append(ticker.strip())
     
         return tickers
+    
+    def get_current_AAA_yield(self):
+        resp=requests.get(
+                f'https://fred.stlouisfed.org/series/AAA')
+        soup=bs.BeautifulSoup(resp.text, 'lxml')
 
+        # Gets the current yield from the website
+        current_yield = soup.find('span', {'class': 'series-meta-observation-value'}).text
 
+        if current_yield == 'N/A':
+            return 0
+        else:
+            return float(current_yield)
 
 # Stock class
 class Stock:
