@@ -2,13 +2,14 @@ import yfinance as yf
 import bs4 as bs
 import requests
 from colorama import Fore
+import pandas as pd
 
 class APIManager:
     def __init__(self):
         self.client = yf
         
     def get_stock_data(self, symbol):
-        return Stock(self.client.Ticker(symbol).info)
+        return Stock(self.client.Ticker(symbol).info, self.client.Ticker(symbol).balance_sheet)
     
     def get_nyse_symbols(self):
         tickers=[]
@@ -47,8 +48,14 @@ class APIManager:
 
 # Stock class
 class Stock:
-    def __init__(self, data):
+    def __init__(self, data, balance_sheet):
+        api_manager = APIManager()
         self.data = data
+        self.balance_sheet = balance_sheet
+        self.ebit = self.get_ebit()
+        self.ey = self.calculate_ey()
+        self.roc = self.calculate_roc()
+        self.intrinsic_value = self.calculate_intrinsic_value(7, api_manager.get_current_AAA_yield())
     
     def return_symbol(self):
         return self.data['symbol']
@@ -76,31 +83,35 @@ class Stock:
     
     def calculate_roc(self):
          
-        # Extract relevant financial data
-        enterprise_value = self.data['enterpriseValue']
-        total_cash = self.data['totalCash']
-        operating_margin = self.data['operatingMargins']
-        total_revenue = self.data['totalRevenue']
-                
-        # Calculate EBIT (Earnings Before Interest and Taxes)
-        # Using revenue * operating margin to derive EBIT
-        ebit = total_revenue * operating_margin
-            
-        # Calculate Return on Capital (ROC)
-        # Formula: EBIT / (Enterprise Value - Cash)
-        invested_capital = enterprise_value - total_cash
-        return ebit / invested_capital if invested_capital else 0
+        df = pd.DataFrame(self.balance_sheet)
+       
+        # Get the current assets and liabilities
+        current_assets = df.loc['Current Assets'].iloc[0]
+        current_liabilities = df.loc['Current Liabilities'].iloc[0]
+        net_working_capital = current_assets - current_liabilities
+        
+        # Get the net fixed assets
+        net_fixed_assets = df.loc['Current Assets'].iloc[0] - df.loc['Accumulated Depreciation'].iloc[0]
+        
+        # Calculate ROC
+        if (net_fixed_assets + net_working_capital) != 0:
+            return self.ebit / (net_fixed_assets + net_working_capital)
+        return 0
 
     def calculate_ey(self):
-        # Extract relevant financial data
-        enterprise_value = self.data['enterpriseValue']
-        operating_margin = self.data['operatingMargins']
-        total_revenue = self.data['totalRevenue']
-                
-        # Calculate EBIT (Earnings Before Interest and Taxes)
-        # Using revenue * operating margin to derive EBIT
-        ebit = total_revenue * operating_margin
         
-        return ebit / enterprise_value if enterprise_value else 0
+        eps = self.data['trailingEps']
+        stock_price = self.data['currentPrice']
+        
+        return eps / stock_price if eps else 0
+    
+    
+    def get_ebit(self):
+        self.pd = pd.DataFrame(yf.Ticker(self.data['symbol']).financials)
+        
+        return self.pd.loc['EBIT'].iloc[0]
+        
+        
+        
         
     

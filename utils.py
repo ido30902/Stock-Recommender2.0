@@ -25,9 +25,9 @@ def rank_graham_stocks(stocks):
     for i, stock in enumerate(stocks, 1):
         stock['graham_props']['graham_rank'] = i
         del stock['graham_props']['value_difference']
+        del stock['graham_props']['graham_score']
 
     # Calculate Graham score and rank stocks accordingly
-    
     return stocks
 
 def rank_magic_formula_stocks(stocks):

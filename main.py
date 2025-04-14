@@ -60,13 +60,8 @@ def get_stocks_data(stocks):
             if s.data['trailingEps'] > 0:
                 graham_score += 1
             
-            intrinsic_value = s.calculate_intrinsic_value(7, current_yield)
-            
-            roc = s.calculate_roc()
-            ey = s.calculate_ey()
-            
-            if intrinsic_value <= 0:
-                intrinsic_value = 0.01
+            if s.intrinsic_value <= 0:
+                s.intrinsic_value = 0.01
             
             # Store data in preset
             preset = {
@@ -80,16 +75,13 @@ def get_stocks_data(stocks):
                 'sector': s.data['sectorDisp'],
                 'graham_props':{
                     'graham_score': graham_score,
-                    'current_ratio': current_ratio,
-                    'debt_to_equity': debt_to_equity,
-                    'book_value': book_value,
                     'graham_rank': 0,
                     'eps': s.data['trailingEps'],
-                    'intrinsic_value': intrinsic_value,
+                    'intrinsic_value': s.intrinsic_value,
                 },
                 'magic_formula_props':{
-                    'roc': roc,
-                    'ey': ey,
+                    'roc': s.roc,
+                    'ey': s.ey,
                     'magic_formula_rank': 0
                 }
             }
@@ -98,7 +90,7 @@ def get_stocks_data(stocks):
             # Higher values are better
             if s.check_formula_valid():
                 print_border()
-                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nTrading Price: {s.data["currentPrice"]:.2f}$\nGraham Price Valuation: {intrinsic_value:.2f}$\nPE: {preset["pe"]:.2f}\nROC: {preset["magic_formula_props"]["roc"] * 100 :.2f}%\nEY: {preset["magic_formula_props"]["ey"] * 100 :.2f}%\nMarket Capital: {s.data["marketCap"]:,}$')
+                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nTrading Price: {s.data["currentPrice"]:.2f}$\nGraham Price Valuation: {s.intrinsic_value:.2f}$\nPE: {preset["pe"]:.2f}\nROC: {s.roc * 100 :.2f}%\nEY: {s.ey * 100 :.2f}%\nMarket Capital: {s.data["marketCap"]:,}$')
                 new_list.append(preset)
             else:
                 print_border()
