@@ -45,21 +45,6 @@ def get_stocks_data(stocks):
             # Get stock data using yfinance
             s = api_manager.get_stock_data(stock)
             
-            # Calculate Return on Capital (ROC)
-            # ROC = EBIT / (Net Working Capital + Net Fixed Assets)
-            #ebitda = s.data['ebitda']
-            #working_capital = s.data['totalCurrentAssets'] - s.data['totalCurrentLiabilities']
-            #fixed_assets = s.data['propertyPlantEquipment']
-            #roc = ebitda / (working_capital + fixed_assets) if (working_capital + fixed_assets) != 0 else 0
-            # different way to calculate ROC
-
-
-            # Calculate Earnings Yield (EY)
-            # EY = EBITDA / Enterprise Value
-            #enterprise_value = s.data['enterpriseValue']
-            #ey = ebitda / enterprise_value if enterprise_value != 0 else 0
-            
-            
             # Calculate Benjamin Graham metrics
             current_ratio = s.data['currentRatio']
             debt_to_equity = s.data['debtToEquity']
@@ -75,7 +60,10 @@ def get_stocks_data(stocks):
             if s.data['trailingEps'] > 0:
                 graham_score += 1
             
-            intrinsic_value = calculate_intrinsic_value(s.data['trailingEps'], 7, current_yield)
+            intrinsic_value = s.calculate_intrinsic_value(7, current_yield)
+            
+            roc = s.calculate_roc()
+            ey = s.calculate_ey()
             
             if intrinsic_value <= 0:
                 intrinsic_value = 0.01
@@ -98,10 +86,10 @@ def get_stocks_data(stocks):
                     'graham_rank': 0,
                     'eps': s.data['trailingEps'],
                     'intrinsic_value': intrinsic_value,
-                    'value_difference': (s.data['currentPrice'] - intrinsic_value) / intrinsic_value * 100
                 },
                 'magic_formula_props':{
-                    'roa': s.data['returnOnAssets'],
+                    'roc': roc,
+                    'ey': ey,
                     'magic_formula_rank': 0
                 }
             }
@@ -110,7 +98,7 @@ def get_stocks_data(stocks):
             # Higher values are better
             if s.check_formula_valid():
                 print_border()
-                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nTrading Price: {s.data["currentPrice"]:.2f}$\nGraham Price Valuation: {intrinsic_value:.2f}$\nPE: {preset["pe"]:.2f}\nPrice Difference: {preset["graham_props"]["value_difference"]:.2f}%\nROA: {s.data["returnOnAssets"] * 100 :.2f}%\nMarket Capital: {s.data["marketCap"]:,}$')
+                print(Fore.GREEN + f'Stock loaded: {stock}\nCompany name: {s.data["shortName"]}\nTrading Price: {s.data["currentPrice"]:.2f}$\nGraham Price Valuation: {intrinsic_value:.2f}$\nPE: {preset["pe"]:.2f}\nROC: {preset["magic_formula_props"]["roc"] * 100 :.2f}%\nEY: {preset["magic_formula_props"]["ey"] * 100 :.2f}%\nMarket Capital: {s.data["marketCap"]:,}$')
                 new_list.append(preset)
             else:
                 print_border()

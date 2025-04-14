@@ -54,6 +54,53 @@ class Stock:
         return self.data['symbol']
     
     def check_formula_valid(self):
-        return (self.data['currentPrice'] / self.data['trailingEps']) > 0 and self.data['returnOnAssets'] > 0
+        return (self.data['currentPrice'] / self.data['trailingEps']) > 0
+    
+    def calculate_intrinsic_value(self,growth_rate, current_yield):
+        """
+        Calculate the intrinsic value using Graham's formula.
+        
+        Parameters:
+        eps (float): Trailing 12-month EPS of the company
+        growth_rate (float): Long-term growth rate of the company (as a decimal)
+        
+        Returns:
+        float: Intrinsic value
+        """
+        
+        AVERAGE_BOND_YIELD_IN_1962 = 4.4
+        PE_FOR_NON_GROWTH_STOCKS = 8.5
+        
+        intrinsic_value = self.data['trailingEps'] * (PE_FOR_NON_GROWTH_STOCKS + (2 * growth_rate) * AVERAGE_BOND_YIELD_IN_1962) / current_yield
+        return intrinsic_value
+    
+    def calculate_roc(self):
+         
+        # Extract relevant financial data
+        enterprise_value = self.data['enterpriseValue']
+        total_cash = self.data['totalCash']
+        operating_margin = self.data['operatingMargins']
+        total_revenue = self.data['totalRevenue']
+                
+        # Calculate EBIT (Earnings Before Interest and Taxes)
+        # Using revenue * operating margin to derive EBIT
+        ebit = total_revenue * operating_margin
+            
+        # Calculate Return on Capital (ROC)
+        # Formula: EBIT / (Enterprise Value - Cash)
+        invested_capital = enterprise_value - total_cash
+        return ebit / invested_capital if invested_capital else 0
+
+    def calculate_ey(self):
+        # Extract relevant financial data
+        enterprise_value = self.data['enterpriseValue']
+        operating_margin = self.data['operatingMargins']
+        total_revenue = self.data['totalRevenue']
+                
+        # Calculate EBIT (Earnings Before Interest and Taxes)
+        # Using revenue * operating margin to derive EBIT
+        ebit = total_revenue * operating_margin
+        
+        return ebit / enterprise_value if enterprise_value else 0
         
     
