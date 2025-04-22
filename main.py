@@ -8,23 +8,26 @@ db_controller = DatabaseManager()
 api_manager = APIManager()
 
 def main():
-    
-    # Get all the stocks from the NYSE
-    stocks_list = api_manager.get_nyse_symbols()
+    while True:
+        # Get all the stocks from the NYSE
+        stocks_list = api_manager.get_nyse_symbols()
    
-    # Get the data for each stock
-    stocks_list = get_stocks_data(stocks_list)
+        # Get the data for each stock
+        stocks_list = get_stocks_data(stocks_list)
 
-    # Rank the stocks based on Graham's formula
-    stocks_list = rank_graham_stocks(stocks_list)
+        # Rank the stocks based on Graham's formula
+        stocks_list = rank_graham_stocks(stocks_list)
 
-    # Rank the stocks based on the Magic Formula
-    stocks_list = rank_magic_formula_stocks(stocks_list)
-    
-    # Update the stocks in the database
-    db_controller.update_many_stocks(stocks_list)
-     
-    print(Style.RESET_ALL + '\n')
+        # Rank the stocks based on the Magic Formula
+        stocks_list = rank_magic_formula_stocks(stocks_list)
+        
+        # Update the stocks in the database
+        db_controller.update_many_stocks(stocks_list)
+        
+        print(Style.RESET_ALL + '\n')
+        
+        # Wait one week before running again
+        time.sleep(604800)
     
     
 
