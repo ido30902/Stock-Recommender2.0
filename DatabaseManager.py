@@ -52,6 +52,6 @@ class DatabaseManager:
                 # Insert new stock if not found
                 self.db['stocks'].insert_one(stock)
     
-    def generate_stock_list(self):
+    def generate_dummy_stock_list(self):
         return ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'GOOG', 'AMZN', 'TSM', 'WMT', 'NFLX', 'ORCL', 'QCOM', 'IBM', 'JNJ', 'VZ', 'BA', 'CAT', 'MMM', 'GE', 'MCD', 'PFE', 'WBA', 'DIS', 'TM', 'V', 'IBM', 'JNJ', 'VZ', 'BA', 'CAT', 'MMM', 'GE', 'MCD', 'PFE', 'WBA', 'DIS', 'TM', 'V', 'IBM', 'JNJ']
 

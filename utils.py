@@ -19,13 +19,12 @@ def rank_graham_stocks(stocks):
         stock['graham_props']['value_difference'] = (stock['price'] - stock["graham_props"]["intrinsic_value"]) / stock["graham_props"]["intrinsic_value"] * 100
     
     # Sort by Graham score and valuation
-    stocks.sort(key=lambda x: (x['graham_props']['graham_score'], stock['graham_props']['value_difference']), reverse=True)
+    stocks.sort(key=lambda x: x['graham_props']['value_difference'])
     
     # Add Graham ranking
     for i, stock in enumerate(stocks, 1):
         stock['graham_props']['graham_rank'] = i
         del stock['graham_props']['value_difference']
-        del stock['graham_props']['graham_score']
 
     # Calculate Graham score and rank stocks accordingly
     return stocks

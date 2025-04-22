@@ -45,21 +45,6 @@ def get_stocks_data(stocks):
             # Get stock data using yfinance
             s = api_manager.get_stock_data(stock)
             
-            # Calculate Benjamin Graham metrics
-            current_ratio = s.data['currentRatio']
-            debt_to_equity = s.data['debtToEquity']
-            book_value = s.data['bookValue']
-            current_price = s.data['currentPrice']
-            graham_score = 0
-
-            # Calculate Graham score based on his criteria
-            if current_ratio >= 2 and debt_to_equity < 0.5:
-                graham_score += 1
-            if current_price < book_value * 1.5:
-                graham_score += 1
-            if s.data['trailingEps'] > 0:
-                graham_score += 1
-            
             if s.intrinsic_value <= 0:
                 s.intrinsic_value = 0.01
             
@@ -74,7 +59,6 @@ def get_stocks_data(stocks):
                 'logo_url': 'https://logo.clearbit.com/' + s.data['website'].strip('https://'),
                 'sector': s.data['sectorDisp'],
                 'graham_props':{
-                    'graham_score': graham_score,
                     'graham_rank': 0,
                     'eps': s.data['trailingEps'],
                     'intrinsic_value': s.intrinsic_value,
