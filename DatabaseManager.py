@@ -42,6 +42,10 @@ class DatabaseManager:
             self.db['stocks'].insert_one(stock)
     
     def update_many_stocks(self, stocks):
+        
+        # Delete all stocks from the database
+        self.db['stocks'].delete_many({})
+        
         for stock in stocks:
             # Check if the stock exists before updating
             existing_stock = self.db['stocks'].find_one({'symbol': stock['symbol']})

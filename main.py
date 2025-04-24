@@ -61,6 +61,7 @@ def get_stocks_data(stocks):
                 'description': s.data['longBusinessSummary'],
                 'logo_url': 'https://logo.clearbit.com/' + s.data['website'].strip('https://'),
                 'sector': s.data['sectorDisp'],
+                'website': s.data['website'],
                 'graham_props':{
                     'graham_rank': 0,
                     'eps': s.data['trailingEps'],
