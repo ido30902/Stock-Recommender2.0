@@ -61,7 +61,7 @@ class Stock:
         return self.data['symbol']
     
     def check_formula_valid(self):
-        return (self.data['currentPrice'] / self.data['trailingEps']) > 0
+        return (self.data['currentPrice'] / self.data['trailingEps']) > 0 and self.roc > 0 and self.ey > 0
     
     def calculate_intrinsic_value(self,growth_rate, current_yield):
         """
