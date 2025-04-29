@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import os
 from colorama import Fore, Style
 from utils import print_border
-
+from datetime import datetime
 
 class DatabaseManager:
     def __init__(self):
@@ -58,4 +58,10 @@ class DatabaseManager:
     
     def generate_dummy_stock_list(self):
         return ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'GOOG', 'AMZN', 'TSM', 'WMT', 'NFLX', 'ORCL', 'QCOM', 'IBM', 'JNJ', 'VZ', 'BA', 'CAT', 'MMM', 'GE', 'MCD', 'PFE', 'WBA', 'DIS', 'TM', 'V', 'IBM', 'JNJ', 'VZ', 'BA', 'CAT', 'MMM', 'GE', 'MCD', 'PFE', 'WBA', 'DIS', 'TM', 'V', 'IBM', 'JNJ']
+
+    def update_last_updated(self):
+        self.db['util'].update_one({}, {'$set': {'last_updated': datetime.now()}})
+
+    def get_last_updated(self):
+        return self.db['util'].find_one({})['last_updated']
 
