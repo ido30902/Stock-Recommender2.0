@@ -24,7 +24,7 @@ def main():
         # Update the stocks in the database
         db_controller.update_many_stocks(stocks_list)
         
-        print(Style.RESET_ALL + '\n')
+        print(Style.RESET_ALL + '\nFinished a session. Waiting for 7 days before running again...')
         
         # Wait one week before running again
         time.sleep(604800)
