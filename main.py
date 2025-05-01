@@ -10,8 +10,8 @@ api_manager = APIManager()
 def main():
     while True:
         # Get all the stocks from the NYSE
-        stocks_list = api_manager.get_nyse_symbols()
-        
+        #stocks_list = api_manager.get_nyse_symbols()
+        stocks_list = ['CTLP', 'HCA', 'HMC', 'GRMN', 'DXCM', 'SW', 'VIK', 'LTM']
         # Get the data for each stock
         stocks_list = get_stocks_data(stocks_list)
 
@@ -24,7 +24,11 @@ def main():
         # Update the stocks in the database
         db_controller.update_many_stocks(stocks_list)
         
+        # Update the last updated date
         db_controller.update_last_updated()
+        
+        # Print the last updated date
+        print(Style.RESET_ALL + f'Last updated: {db_controller.get_last_updated()}')
         
         print(Style.RESET_ALL + '\nFinished a session. Waiting for 7 days before running again...')
         
