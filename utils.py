@@ -51,7 +51,56 @@ def rank_magic_formula_stocks(stocks):
     
     return stocks
 
-
+def fix_icon_missing(stock):
+    if stock['symbol'] == 'META':
+        stock['logo_url'] = 'https://logo.clearbit.com/meta.com'
+        return stock
+    if stock['symbol'] == 'GPN':
+        stock['logo_url'] = 'https://logo.clearbit.com/globalpayments.com'
+        return stock
+    if stock['symbol'] == 'TBBB':
+        stock['logo_url'] = 'https://bbbfoods.net/en/'
+        return stock
+    if stock['symbol'] == 'LAUR':
+        stock['logo_url'] = 'https://logo.clearbit.com/laureate.net/'
+        return stock
+    if stock['symbol'] == 'CMBT':
+        stock['logo_url'] = 'https://logo.clearbit.com/cmb.tech/'
+        return stock
+    if stock['symbol'] == 'HALO':
+        stock['logo_url'] = 'https://logo.clearbit.com/halozyme.com'
+        return stock
+    if stock['symbol'] == 'HLI':
+        stock['logo_url'] = 'https://logo.clearbit.com/hl.com'
+        return stock
+    if stock['symbol'] == 'TM':
+        stock['logo_url'] = 'https://logo.clearbit.com/toyota.com'
+        return stock
+    if stock['symbol'] == 'DIS':
+        stock['logo_url'] = 'https://logo.clearbit.com/disney.com'
+        return stock
+    if stock['symbol'] == 'HCA':
+        stock['logo_url'] = 'https://logo.clearbit.com/hcahealthcare.com'
+        return stock
+    if stock['symbol'] == 'HMC':
+        stock['logo_url'] = 'https://logo.clearbit.com/honda.com'
+        return stock
+    if stock['symbol'] == 'GRMN':
+        stock['logo_url'] = 'https://logo.clearbit.com/garmin.com'
+        return stock
+    if stock['symbol'] == 'DXCM':
+        stock['logo_url'] = 'https://logo.clearbit.com/dexcom.com'
+        return stock
+    if stock['symbol'] == 'SW':
+        stock['logo_url'] = 'https://logo.clearbit.com/smurfitkappa.com'
+        return stock
+    if stock['symbol'] == 'VIK':
+        stock['logo_url'] = 'https://logo.clearbit.com/viking.com'
+        return stock
+    if stock['symbol'] == 'LTM':
+        stock['logo_url'] = 'https://logo.clearbit.com/latamairlines.com'
+        return stock
+    return stock
 
 
 def print_border(): print(Fore.WHITE + "=====================================================")

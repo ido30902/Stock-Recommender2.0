@@ -11,7 +11,7 @@ def main():
     while True:
         # Get all the stocks from the NYSE
         stocks_list = api_manager.get_nyse_symbols()
-
+        
         # Get the data for each stock
         stocks_list = get_stocks_data(stocks_list)
 
@@ -75,6 +75,8 @@ def get_stocks_data(stocks):
                     'magic_formula_rank': 0
                 }
             }
+            
+            preset = fix_icon_missing(preset)
 
             # Magic Formula combines ROC and EY
             # Higher values are better
