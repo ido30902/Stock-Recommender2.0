@@ -24,8 +24,9 @@ class DatabaseManager:
                 print(Fore.RED + "Database not found")
                 print_border()
                 
-        except:
-            print(Fore.RED + "Error connecting to MongoDB or Database not found")
+        except Exception as e:
+            print(Fore.RED + "Error connecting to MongoDB or Database not found\n")
+            print(str(e))
             print_border()
         
     def insert_new_stock(self,stock):

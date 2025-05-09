@@ -1,0 +1,16 @@
+# requirements.txt for Stock Recommender 2.0
+
+# Core functionality
+yfinance
+pymongo
+pandas
+requests
+python-dotenv
+
+# HTML parsing
+beautifulsoup4
+bs4
+lxml
+
+# Terminal formatting
+colorama

@@ -19,9 +19,9 @@ class APIManager:
             print(Fore.WHITE + f'Loading stocks that start with: {letter}')
             
             # Stock list found online. The BeautifulSoup library reads the page's HTML
-            resp=requests.get(
+            resp = requests.get(
                 f'https://stock-screener.org/stock-list.aspx?alpha={letter}')
-            soup=bs.BeautifulSoup(resp.text, 'lxml')
+            soup = bs.BeautifulSoup(resp.text, 'lxml')
             
             # Tracks the table element from the website
             table=soup.find('table', {'class': 'styled'})
