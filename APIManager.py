@@ -24,8 +24,8 @@ class APIManager:
             soup = bs.BeautifulSoup(resp.text, 'lxml')
             
             # Tracks the table element from the website
-            table=soup.find('table', {'class': 'styled'})
-
+            table=soup.find('table', {'class': 'table'})
+            
             # Fetches the actual value from the table
             for row in table.findAll('tr')[1:]:
                 ticker=row.findAll('td')[0].text
